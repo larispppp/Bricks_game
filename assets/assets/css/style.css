@@ -1,0 +1,9 @@
+#canvas{
+    border: 1px solid black;
+}
+#wrapper {
+    position: relative;
+    margin: auto;
+    height: fit-content;
+    width: fit-content;
+  }
