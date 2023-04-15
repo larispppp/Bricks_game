@@ -1,7 +1,7 @@
 var x = 100;
 var y = 400;
-var dx = 1;
-var dy = 1;
+var dx = 3;
+var dy = 3;
 var ctx;
 var canvas;
 var width;
@@ -23,6 +23,16 @@ var canvasMaxX;
 var oblak = document.getElementById("cloud");
 var brickxCoord = [];
 var brickyCoord = [];
+let play = 0;
+let a = 5;
+var side;
+
+//pizderije porkerije
+var left;
+var right;
+var top;
+var bot;
+var min;
 
 function init() {
   canvas = document.getElementById("canvas");
@@ -49,8 +59,8 @@ $(document).keyup(onKeyUp);
 $(document).mousemove(onMouseMove);
 
 function init_mouse() {
-  canvasMinX = $("canvas").offset().left;
-  canvasMaxX = canvasMinX + width;
+  canvasMinX = $("canvas").offset().left + paddlew / 2;
+  canvasMaxX = canvasMinX + width - paddlew;
 }
 
 function onMouseMove(evt) {
@@ -63,9 +73,9 @@ function initbricks() {
   //inicializacija opek - polnjenje v tabelo
   nrows = 5;
   ncols = 5;
-  brickwidth = 140;
+  brickwidth = 130;
   brickheight = 50;
-  padding = 10;
+  padding = 20;
   bricks = new Array(nrows);
   for (i = 0; i < nrows; i++) {
     bricks[i] = Array(ncols);
@@ -77,18 +87,20 @@ function initbricks() {
 
 function draw() {
   //premik ploščice levo in desno
-  if (paddlex < 800 && paddlex > 0) {
+  if (paddlex < width && paddlex > 0) {
     if (rightDown && paddlex + paddlew < width) paddlex += 5;
     else if (leftDown && paddlex > 0) paddlex -= 5;
   } else {
     if (rightDown && paddlex + paddlew < width) paddlex += 5;
     else if (leftDown && paddlex > 0) paddlex -= 5;
   }
+
+  //odboji
   if (x + dx > width - 10 || x + dx < 5) dx = -dx;
   if (y + dy < 10) dy = -dy;
   if (y + dy > height - 10) {
     //ce bo vouk pustu
-    if (x > paddlex && x < paddlex + paddlew) {
+    if (x > paddlex && x < paddlex + paddlew && y > 10) {
       // Calculate the angle of incidence between the ball and the paddle
       let relativeIntersectX = x - (paddlex + paddlew / 2);
       let normalizedRelativeIntersectX = relativeIntersectX / (paddlew / 2);
@@ -103,76 +115,112 @@ function draw() {
         dx = 10 * ((x - (paddlex + paddlew / 2)) / paddlew);
         dy = -dy;*/
     } else {
-      lose();
+      dy = -dy;
     }
   }
 
-  ctx.clearRect(0, 0, 800, 800);
+  ctx.clearRect(0, 0, height, width);
   ctx.beginPath();
   ctx.rect(paddlex, height - paddleh, paddlew, paddleh);
   ctx.arc(x, y, 10, 0, Math.PI * 2, true);
   ctx.closePath();
   ctx.fill();
+  ctx.fillStyle = "red";
   x += dx;
   y += dy;
-
   // draw bricks
   brickyCoord = [];
   brickxCoord = [];
   for (i = 0; i < nrows; i++) {
     for (j = 0; j < ncols; j++) {
-      if (bricks[i][j] == 1) {
-        ctx.beginPath();
-        var brickx = j * (brickwidth + padding) + padding;
-        brickxCoord.push(brickx + 10);
-        var bricky = i * (brickheight + padding) + padding;
-        brickyCoord.push(bricky + 10);
-        ctx.drawImage(
-          oblak,
-          brickx + padding,
-          bricky + padding,
-          brickwidth,
-          brickheight
-        );
-        ctx.fillStyle = "#0095DD";
-        ctx.fill();
-        ctx.closePath();
-      }
+      var brickx = j * (brickwidth + padding) + padding;
+      brickxCoord.push(brickx + 10);
+      var bricky = i * (brickheight + padding) + padding;
+      brickyCoord.push(bricky + 10);
     }
   }
+
   rowheight = brickheight + padding / 2; //Smo zadeli opeko?
   colwidth = brickwidth + padding / 2;
   row = Math.floor(y / rowheight);
   col = Math.floor(x / colwidth);
-  //Če smo zadeli opeko, vrni povratno kroglo in označi v tabeli, da opeke ni več
-  for (let i = 0; i < 24; i++) {
-    ctx.fillRect(brickxCoord[i], brickyCoord[i], 5, 5);
-    if (
-      x < brickxCoord[i] + brickwidth + 10 &&
-      y < brickyCoord[i] + brickheight + 10 &&
-      x > brickxCoord[i] - 10 &&
-      y > brickyCoord[i] - 10
-    ) {
-      if (row < 5 && col < 5) {
-        console.log(" hellooooo");
-        if (bricks[row][col] == 1) {
-          console.log(" bnallllsss");
-          dy = -dy;
-          bricks[row][col] = 0;
+  //brick breaking
+  for (let i = 0; i < bricks.length; i++) {
+    for (let j = 0; j < bricks[i].length; j++) {
+      if (bricks[i][j] == 1) {
+        ctx.strokeRect(
+          brickxCoord[i * nrows + j],
+          brickyCoord[i * nrows + j],
+          brickwidth,
+          brickheight
+        );
+      }
+
+      if (
+        x - 10 < brickxCoord[i * nrows + j] + brickwidth &&
+        y - 10 < brickyCoord[i * nrows + j] + brickheight &&
+        x + 10 > brickxCoord[i * nrows + j] &&
+        y + 10 > brickyCoord[i * nrows + j] &&
+        bricks[i][j] == 1
+      ) {
+        var obj = {
+          bot: brickyCoord[i * nrows + j] + brickheight - y,
+          top: y - brickyCoord[i * nrows + j],
+          left: x - brickxCoord[i * nrows + j],
+          right: brickxCoord[i * nrows + j] + brickwidth - x,
+        };
+
+        var smallest = "";
+        for (var key in obj) {
+          if (smallest !== "" && obj[key] < obj[smallest]) {
+            smallest = key;
+          } else if (smallest === "") {
+            smallest = key;
+          }
         }
+        console.log(smallest);
+        if (smallest == "bot") {
+          dy = -dy;
+          bricks[i][j] = 0;
+        } else if (smallest == "top") {
+          dy = -dy;
+          bricks[i][j] = 0;
+        } else if (smallest == "left") {
+          dx = -dx;
+          bricks[i][j] = 0;
+        } else if (smallest == "right") {
+          dx = -dx;
+          bricks[i][j] = 0;
+        }
+        /*
+        a = Math.floor(x);
+        if (
+          a - 10 == brickxCoord[i * nrows + j] + brickwidth ||
+          a + 10 == brickxCoord[i * nrows + j]
+        ) {
+          if (bricks[i][j] == 1) {
+            dx = -dx;
+            bricks[i][j] = 2;
+          }
+        } else {
+          if (bricks[i][j] == 1) {
+            dy = -dy;
+            bricks[i][j] = 2;
+          }
+        }*/
       }
     }
   }
-  /*if (y < nrows * rowheight && row >= 0 && col >= 0) {
-        if (row < 5 && col < 5) {
-          if (bricks[row][col] == 1) {
-            dy = -dy;
-            bricks[row][col] = 0;
-          }
-        }
-      }*/
 }
-
+function pause() {
+  if (play == 0) {
+    clearInterval(interval);
+    play = 1;
+  } else {
+    play = 0;
+    init();
+  }
+}
 init();
 initbricks();
 init_mouse();
