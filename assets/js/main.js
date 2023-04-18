@@ -80,7 +80,11 @@ function initbricks() {
   for (i = 0; i < nrows; i++) {
     bricks[i] = Array(ncols);
     for (j = 0; j < ncols; j++) {
-      bricks[i][j] = 1;
+      if (i == 4) {
+        bricks[i][j] = 2;
+      } else {
+        bricks[i][j] = 1;
+      }
     }
   }
 }
@@ -98,9 +102,9 @@ function draw() {
   //odboji
   if (x + dx > width - 10 || x + dx < 5) dx = -dx;
   if (y + dy < 10) dy = -dy;
-  if (y + dy > height - 10) {
+  if (y + dy > height - 17) {
     //ce bo vouk pustu
-    if (x > paddlex && x < paddlex + paddlew && y > 10) {
+    if (x > paddlex && x < paddlex + paddlew) {
       // Calculate the angle of incidence between the ball and the paddle
       let relativeIntersectX = x - (paddlex + paddlew / 2);
       let normalizedRelativeIntersectX = relativeIntersectX / (paddlew / 2);
@@ -114,8 +118,8 @@ function draw() {
       /* //different paddle bounces
         dx = 10 * ((x - (paddlex + paddlew / 2)) / paddlew);
         dy = -dy;*/
-    } else {
-      dy = -dy;
+    } else if (y + dy > height - 9) {
+      lose();
     }
   }
 
@@ -148,6 +152,15 @@ function draw() {
   for (let i = 0; i < bricks.length; i++) {
     for (let j = 0; j < bricks[i].length; j++) {
       if (bricks[i][j] == 1) {
+        ctx.strokeStyle = "blue";
+        ctx.strokeRect(
+          brickxCoord[i * nrows + j],
+          brickyCoord[i * nrows + j],
+          brickwidth,
+          brickheight
+        );
+      } else if (bricks[i][j] == 2) {
+        ctx.strokeStyle = "red";
         ctx.strokeRect(
           brickxCoord[i * nrows + j],
           brickyCoord[i * nrows + j],
@@ -155,44 +168,43 @@ function draw() {
           brickheight
         );
       }
-
       if (
         x - 10 < brickxCoord[i * nrows + j] + brickwidth &&
         y - 10 < brickyCoord[i * nrows + j] + brickheight &&
         x + 10 > brickxCoord[i * nrows + j] &&
-        y + 10 > brickyCoord[i * nrows + j] &&
-        bricks[i][j] == 1
+        y + 10 > brickyCoord[i * nrows + j]
       ) {
-        var obj = {
-          bot: brickyCoord[i * nrows + j] + brickheight - y,
-          top: y - brickyCoord[i * nrows + j],
-          left: x - brickxCoord[i * nrows + j],
-          right: brickxCoord[i * nrows + j] + brickwidth - x,
-        };
+        if (bricks[i][j] == 1 || bricks[i][j] == 2) {
+          var obj = {
+            bot: brickyCoord[i * nrows + j] + brickheight - y,
+            top: y - brickyCoord[i * nrows + j],
+            left: x - brickxCoord[i * nrows + j],
+            right: brickxCoord[i * nrows + j] + brickwidth - x,
+          };
 
-        var smallest = "";
-        for (var key in obj) {
-          if (smallest !== "" && obj[key] < obj[smallest]) {
-            smallest = key;
-          } else if (smallest === "") {
-            smallest = key;
+          var smallest = "";
+          for (var key in obj) {
+            if (smallest !== "" && obj[key] < obj[smallest]) {
+              smallest = key;
+            } else if (smallest === "") {
+              smallest = key;
+            }
           }
-        }
-        console.log(smallest);
-        if (smallest == "bot") {
-          dy = -dy;
-          bricks[i][j] = 0;
-        } else if (smallest == "top") {
-          dy = -dy;
-          bricks[i][j] = 0;
-        } else if (smallest == "left") {
-          dx = -dx;
-          bricks[i][j] = 0;
-        } else if (smallest == "right") {
-          dx = -dx;
-          bricks[i][j] = 0;
-        }
-        /*
+          console.log(smallest);
+          if (smallest == "bot") {
+            dy = -dy;
+            bricks[i][j] -= 1;
+          } else if (smallest == "top") {
+            dy = -dy;
+            bricks[i][j] -= 1;
+          } else if (smallest == "left") {
+            dx = -dx;
+            bricks[i][j] -= 1;
+          } else if (smallest == "right") {
+            dx = -dx;
+            bricks[i][j] -= 1;
+          }
+          /*
         a = Math.floor(x);
         if (
           a - 10 == brickxCoord[i * nrows + j] + brickwidth ||
@@ -208,6 +220,7 @@ function draw() {
             bricks[i][j] = 2;
           }
         }*/
+        }
       }
     }
   }
