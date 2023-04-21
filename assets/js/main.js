@@ -20,7 +20,10 @@ var brickheight;
 var padding;
 var canvasMinX;
 var canvasMaxX;
-var oblak = document.getElementById("cloud");
+const blue_Brick = document.getElementById("blue");
+const red_Brick = document.getElementById("red");
+const red_Brick_hit = document.getElementById("red_hit");
+const ball = document.getElementById("ball");
 var brickxCoord = [];
 var brickyCoord = [];
 let play = 0;
@@ -81,7 +84,7 @@ function initbricks() {
     bricks[i] = Array(ncols);
     for (j = 0; j < ncols; j++) {
       if (i == 4) {
-        bricks[i][j] = 2;
+        bricks[i][j] = 4;
       } else {
         bricks[i][j] = 1;
       }
@@ -126,13 +129,13 @@ function draw() {
   ctx.clearRect(0, 0, height, width);
   ctx.beginPath();
   ctx.rect(paddlex, height - paddleh, paddlew, paddleh);
-  ctx.arc(x, y, 10, 0, Math.PI * 2, true);
+  ctx.drawImage(ball,x,y,20,20);
   ctx.closePath();
   ctx.fill();
   ctx.fillStyle = "red";
   x += dx;
   y += dy;
-  // draw bricks
+
   brickyCoord = [];
   brickxCoord = [];
   for (i = 0; i < nrows; i++) {
@@ -151,21 +154,29 @@ function draw() {
   //brick breaking
   for (let i = 0; i < bricks.length; i++) {
     for (let j = 0; j < bricks[i].length; j++) {
-      if (bricks[i][j] == 1) {
-        ctx.strokeStyle = "blue";
-        ctx.strokeRect(
+      if (bricks[i][j] == 1) {  // draw bricks
+        ctx.drawImage(
+          blue_Brick,
           brickxCoord[i * nrows + j],
           brickyCoord[i * nrows + j],
-          brickwidth,
-          brickheight
+          130,
+          50
         );
-      } else if (bricks[i][j] == 2) {
-        ctx.strokeStyle = "red";
-        ctx.strokeRect(
+      } else if (bricks[i][j] == 4) {
+        ctx.drawImage(
+          red_Brick,
           brickxCoord[i * nrows + j],
           brickyCoord[i * nrows + j],
-          brickwidth,
-          brickheight
+          130,
+          50
+        );
+      } else if (bricks[i][j] == 3) {
+        ctx.drawImage(
+          red_Brick_hit,
+          brickxCoord[i * nrows + j],
+          brickyCoord[i * nrows + j],
+          130,
+          50
         );
       }
       if (
@@ -174,7 +185,7 @@ function draw() {
         x + 10 > brickxCoord[i * nrows + j] &&
         y + 10 > brickyCoord[i * nrows + j]
       ) {
-        if (bricks[i][j] == 1 || bricks[i][j] == 2) {
+        if (bricks[i][j] == 1 || bricks[i][j] == 4 || bricks[i][j]==3) {
           var obj = {
             bot: brickyCoord[i * nrows + j] + brickheight - y,
             top: y - brickyCoord[i * nrows + j],
