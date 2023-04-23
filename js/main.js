@@ -1,7 +1,9 @@
-var x = 100;
+var x = 200;
 var y = 400;
-var dx = 3;
-var dy = 3;
+var dx = 4;
+var dy = 4;
+var bricksArray;
+var timer;
 var ctx;
 var canvas;
 var width;
@@ -20,15 +22,21 @@ var brickheight;
 var padding;
 var canvasMinX;
 var canvasMaxX;
+var points = 0;
+var lifeCount = document.getElementById("lives");
+var totalScore = document.getElementById("score");
 const blue_Brick = document.getElementById("blue");
 const red_Brick = document.getElementById("red");
 const red_Brick_hit = document.getElementById("red_hit");
 const ball = document.getElementById("ball");
+const paddle = document.getElementById("paddle");
 var brickxCoord = [];
 var brickyCoord = [];
 let play = 0;
 let a = 5;
+var lives = 3;
 var side;
+let brickCount = 25;
 
 //pizderije porkerije
 var left;
@@ -43,8 +51,9 @@ function init() {
   width = 800;
   height = 800;
   paddlex = width / 2;
-  paddleh = 10;
+  paddleh = 15;
   paddlew = 100;
+
   return (interval = setInterval(draw, 10)); //klic funkcije draw vsakih 10 ms; http://www.w3schools.com/jsref/met_win_setinterval.asp
 }
 //nastavljanje leve in desne tipke
@@ -76,20 +85,74 @@ function initbricks() {
   //inicializacija opek - polnjenje v tabelo
   nrows = 5;
   ncols = 5;
-  brickwidth = 130;
-  brickheight = 50;
-  padding = 20;
-  bricks = new Array(nrows);
-  for (i = 0; i < nrows; i++) {
+  brickwidth = 137;
+  brickheight = 40;
+  padding = 15.7;
+  bricksArray = [
+    [
+      [1, 1, 1, 1, 1],
+      [1, 1, 4, 1, 1],
+      [1, 4, 4, 4, 1],
+      [1, 1, 4, 1, 1],
+      [1, 1, 1, 1, 1],
+    ],
+    [
+      [4, 1, 4, 1, 4],
+      [1, 4, 1, 4, 1],
+      [4, 1, 4, 1, 4],
+      [1, 4, 1, 4, 1],
+      [4, 1, 4, 1, 4],
+    ],
+    [
+      [4, 1, 4, 1, 4],
+      [4, 1, 4, 1, 4],
+      [4, 1, 4, 1, 4],
+      [4, 1, 4, 1, 4],
+      [4, 1, 4, 1, 4],
+    ],
+    [
+      [4, 4, 4, 4, 4],
+      [1, 1, 1, 1, 1],
+      [4, 4, 4, 4, 4],
+      [1, 1, 1, 1, 1],
+      [4, 4, 4, 4, 4],
+    ],
+    [
+      [1, 1, 4, 1, 1],
+      [1, 4, 1, 4, 1],
+      [4, 1, 1, 1, 4],
+      [1, 4, 1, 4, 1],
+      [1, 1, 4, 1, 1],
+    ],
+    [
+      [1, 1, 4, 1, 1],
+      [1, 1, 4, 1, 1],
+      [4, 4, 4, 4, 4],
+      [1, 1, 4, 1, 1],
+      [1, 1, 4, 1, 1],
+    ],
+    [
+      [4, 1, 1, 1, 4],
+      [1, 4, 1, 4, 1],
+      [1, 1, 4, 1, 1],
+      [1, 4, 1, 4, 1],
+      [4, 1, 1, 1, 4],
+    ],
+  ];
+  let brickSelect = Math.floor(Math.random() * 7);
+  bricks = bricksArray[brickSelect];
+  //bricks = new Array(nrows);
+  /*for (i = 0; i < nrows; i++) {
     bricks[i] = Array(ncols);
     for (j = 0; j < ncols; j++) {
-      if (i == 4) {
+      if (i==1) {
+        if(j==)
         bricks[i][j] = 4;
       } else {
         bricks[i][j] = 1;
       }
     }
-  }
+  }*/
 }
 
 function draw() {
@@ -103,8 +166,14 @@ function draw() {
   }
 
   //odboji
-  if (x + dx > width - 10 || x + dx < 5) dx = -dx;
-  if (y + dy < 10) dy = -dy;
+  if (x + dx > width - 10 || x + dx < 5) {
+    dx = -dx;
+    bounceSound.play();
+  }
+  if (y + dy < 10) {
+    dy = -dy;
+    bounceSound.play();
+  }
   if (y + dy > height - 17) {
     //ce bo vouk pustu
     if (x > paddlex && x < paddlex + paddlew) {
@@ -117,19 +186,37 @@ function draw() {
       let speed = Math.sqrt(dx * dx + dy * dy);
       dx = speed * Math.sin(bounceAngle);
       dy = -speed * Math.cos(bounceAngle);
+      bounceSound.play();
 
       /* //different paddle bounces
         dx = 10 * ((x - (paddlex + paddlew / 2)) / paddlew);
         dy = -dy;*/
     } else if (y + dy > height - 9) {
-      lose();
+      if (lives > 1) {
+        lives--;
+        x = paddlex + paddlew / 2;
+        y = height - 20;
+        updateLives(lives);
+        setTimeout(() => {
+          pause();
+        }, 250);
+        pause();
+        dx = 4;
+        dy = -4;
+      } else {
+        lives--;
+        updateLives(lives);
+        lose();
+      }
     }
   }
 
   ctx.clearRect(0, 0, height, width);
   ctx.beginPath();
-  ctx.rect(paddlex, height - paddleh, paddlew, paddleh);
-  ctx.drawImage(ball,x,y,20,20);
+  //ctx.rect(paddlex, height - paddleh, paddlew, paddleh);
+  ctx.drawImage(paddle, paddlex, height - paddleh, paddlew, paddleh);
+
+  ctx.drawImage(ball, x - 10, y - 10, 20, 20);
   ctx.closePath();
   ctx.fill();
   ctx.fillStyle = "red";
@@ -154,29 +241,33 @@ function draw() {
   //brick breaking
   for (let i = 0; i < bricks.length; i++) {
     for (let j = 0; j < bricks[i].length; j++) {
-      if (bricks[i][j] == 1) {  // draw bricks
+      if (brickCount == 0) {
+        win();
+      }
+      if (bricks[i][j] == 1) {
+        // draw bricks
         ctx.drawImage(
           blue_Brick,
           brickxCoord[i * nrows + j],
           brickyCoord[i * nrows + j],
-          130,
-          50
+          137,
+          40
         );
       } else if (bricks[i][j] == 4) {
         ctx.drawImage(
           red_Brick,
           brickxCoord[i * nrows + j],
           brickyCoord[i * nrows + j],
-          130,
-          50
+          137,
+          40
         );
       } else if (bricks[i][j] == 3) {
         ctx.drawImage(
           red_Brick_hit,
           brickxCoord[i * nrows + j],
           brickyCoord[i * nrows + j],
-          130,
-          50
+          137,
+          40
         );
       }
       if (
@@ -185,7 +276,7 @@ function draw() {
         x + 10 > brickxCoord[i * nrows + j] &&
         y + 10 > brickyCoord[i * nrows + j]
       ) {
-        if (bricks[i][j] == 1 || bricks[i][j] == 4 || bricks[i][j]==3) {
+        if (bricks[i][j] == 1 || bricks[i][j] == 4 || bricks[i][j] == 3) {
           var obj = {
             bot: brickyCoord[i * nrows + j] + brickheight - y,
             top: y - brickyCoord[i * nrows + j],
@@ -202,18 +293,23 @@ function draw() {
             }
           }
           console.log(smallest);
+
           if (smallest == "bot") {
             dy = -dy;
             bricks[i][j] -= 1;
+            updateScore(bricks[i][j]);
           } else if (smallest == "top") {
             dy = -dy;
             bricks[i][j] -= 1;
+            updateScore(bricks[i][j]);
           } else if (smallest == "left") {
             dx = -dx;
             bricks[i][j] -= 1;
+            updateScore(bricks[i][j]);
           } else if (smallest == "right") {
             dx = -dx;
             bricks[i][j] -= 1;
+            updateScore(bricks[i][j]);
           }
           /*
         a = Math.floor(x);
@@ -245,9 +341,25 @@ function pause() {
     init();
   }
 }
+function updateLives() {
+  lifeCount.textContent = "Lives: " + lives;
+}
+function updateScore(brickId) {
+  if (brickId == 2 || brickId == 0) {
+    points += 100;
+    brickCount--;
+    console.log(brickCount);
+    brickBreakSound.play();
+  } else if (brickId == 3) {
+    brickHitSound.play();
+  }
+  totalScore.textContent = "Score: " + points;
+}
 init();
 initbricks();
 init_mouse();
+function win() {}
 function lose() {
   clearInterval(interval);
+  loseSound.play();
 }

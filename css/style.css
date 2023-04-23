@@ -1,0 +1,42 @@
+#canvas {
+  border: 1px solid black;
+}
+#score {
+  width: 120px;
+  padding: 10px;
+  font-size: 24px;
+  border: 1px solid black;
+  border-radius: 4px;
+  display: inline-flex;
+}
+#lives {
+  width: 80px;
+  padding: 10px;
+  font-size: 24px;
+  border: 1px solid black;
+  border-radius: 4px;
+  display: inline-flex;
+}
+#timer {
+  width: 80px;
+  padding: 10px;
+  font-size: 24px;
+  border: 1px solid black;
+  border-radius: 4px;
+  display: inline-flex;
+}
+#scoreBoard {
+  display: inline-flex;
+  position: absolute;
+  top: -24px;
+}
+#wrapper {
+  position: absolute;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 5%;
+  left: 0;
+  right: 0;
+  height: fit-content;
+  width: fit-content;
+}
