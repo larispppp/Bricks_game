@@ -174,9 +174,9 @@ function draw() {
     dy = -dy;
     bounceSound.play();
   }
-  if (y + dy > height - 17) {
+  if (y + dy > height - 15) {
     //ce bo vouk pustu
-    if (x > paddlex && x < paddlex + paddlew) {
+    if (x > paddlex - 10 && x < paddlex + paddlew + 10) {
       // Calculate the angle of incidence between the ball and the paddle
       let relativeIntersectX = x - (paddlex + paddlew / 2);
       let normalizedRelativeIntersectX = relativeIntersectX / (paddlew / 2);
@@ -241,9 +241,6 @@ function draw() {
   //brick breaking
   for (let i = 0; i < bricks.length; i++) {
     for (let j = 0; j < bricks[i].length; j++) {
-      if (brickCount == 0) {
-        win();
-      }
       if (bricks[i][j] == 1) {
         // draw bricks
         ctx.drawImage(
@@ -332,6 +329,7 @@ function draw() {
     }
   }
 }
+
 function pause() {
   if (play == 0) {
     clearInterval(interval);
@@ -353,13 +351,43 @@ function updateScore(brickId) {
   } else if (brickId == 3) {
     brickHitSound.play();
   }
+  if (brickCount == 0) {
+    win();
+  }
   totalScore.textContent = "Score: " + points;
 }
 init();
 initbricks();
 init_mouse();
-function win() {}
+function win() {
+  clearInterval(interval);
+  Swal.fire({
+    title: "You won!",
+    text: "Would you like to play again?",
+    icon: "success",
+    confirmButtonText: "Yes",
+    cancelButtonText: "No",
+  }).then((result) => {
+    // If the user clicks "Yes", reset the page
+    if (result.isConfirmed) {
+      location.reload();
+    }
+  });
+}
 function lose() {
   clearInterval(interval);
   loseSound.play();
+  Swal.fire({
+    title: "Game over!",
+    text: "You lost all your lives! Would you like to play again?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Yes",
+    cancelButtonText: "No",
+  }).then((result) => {
+    // If the user clicks "Yes", reset the page
+    if (result.isConfirmed) {
+      location.reload();
+    }
+  });
 }
