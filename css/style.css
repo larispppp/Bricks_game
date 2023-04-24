@@ -1,29 +1,37 @@
 #canvas {
-  border: 1px solid black;
+  top: 63px;
+  border-radius: 4px;
+  background-color: #dededef7;
+  position: absolute;
 }
 #score {
+  float: left;
+  background-color: #dededef7;
   width: 120px;
   padding: 10px;
   font-size: 24px;
-  border: 1px solid black;
   border-radius: 4px;
-  display: inline-flex;
 }
 #lives {
+  margin-left: 10px;
+  float: left;
+  background-color: #dededef7;
   width: 80px;
   padding: 10px;
   font-size: 24px;
-  border: 1px solid black;
   border-radius: 4px;
-  display: inline-flex;
+}
+#leftDiv {
+  margin-top: -30px;
 }
 #timer {
+  margin-left: 450px;
+  background-color: #dededef7;
   width: 80px;
   padding: 10px;
   font-size: 24px;
-  border: 1px solid black;
-  border-radius: 4px;
   display: inline-flex;
+  border-radius: 4px;
 }
 #scoreBoard {
   display: inline-flex;
@@ -39,4 +47,33 @@
   right: 0;
   height: fit-content;
   width: fit-content;
+}
+#leader {
+  display: flexbox;
+  height: 790px;
+  width: 800px;
+  position: relative;
+  opacity: 0;
+  background-color: #dededef7;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  border: 1px solid black;
+}
+.entry {
+  justify-content: space-around;
+  width: 100%;
+  font-size: 28px;
+  height: fit-content;
+  display: flex;
+  flex-flow: row;
+}
+.entry :nth-child(2) {
+  border-left: 1px solid black;
+}
+.innerEntry {
+  height: 50px;
+  width: 50%;
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
 }

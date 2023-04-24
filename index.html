@@ -3,12 +3,13 @@
   <head>
     <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/soundmanager2/2.97a.20150601/script/soundmanager2.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/soundmanager2/2.97a.20150601/script/soundmanager2-nodebug-jsmin.js"></script>
     <script defer src="js/audio.js"></script>
     <script defer src="js/main.js"></script>
+    <link rel="icon" type="image/x-icon" href="/assets/icon.ico" />
     <link rel="stylesheet" type="text/css" href="css/style.css" />
   </head>
-  <body>
+  <body onload="start()">
     <div id="wrapper">
       <canvas id="canvas" width="800" height="800">
         <img id="blue" src="assets/default_bricks.png	" alt="" />
@@ -17,12 +18,12 @@
         <img id="ball" src="assets/ball.png" alt="" />
         <img id="paddle" src="assets/paddle.png" alt="" />
       </canvas>
-    </div>
-    <div id="scoreBoard">
-      <p id="score">Score: 0</p>
-      <p id="lives">Lives: 3</p>
-      <p id="timer">Time: 3</p>
-      <input type="button" id="button1" onclick="pause()" />
+      <div id="leftDiv">
+        <p id="score">Score: 0</p>
+        <p id="lives">Lives: 3</p>
+      </div>
+      <p id="timer">00:00</p>
+      <div id="leader"></div>
     </div>
   </body>
 </html>

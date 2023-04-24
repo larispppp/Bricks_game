@@ -2,8 +2,25 @@ var x = 200;
 var y = 400;
 var dx = 4;
 var dy = 4;
+var lifeCount = document.getElementById("lives");
+var totalScore = document.getElementById("score");
+const blue_Brick = document.getElementById("blue");
+const red_Brick = document.getElementById("red");
+const red_Brick_hit = document.getElementById("red_hit");
+const ball = document.getElementById("ball");
+const paddle = document.getElementById("paddle");
+const highScoresList = document.getElementById("leader");
+const timer = document.getElementById("timer");
+let gameScore = [];
+gameScore = JSON.parse(localStorage.getItem("score")) || [];
+let usernames = [];
+usernames = JSON.parse(localStorage.getItem("username")) || [];
+var leaderboard = [];
+var pushUsername;
+var leaderboardEntry;
+var leaderboardEntryScore;
+var leaderboardEntryName;
 var bricksArray;
-var timer;
 var ctx;
 var canvas;
 var width;
@@ -23,13 +40,6 @@ var padding;
 var canvasMinX;
 var canvasMaxX;
 var points = 0;
-var lifeCount = document.getElementById("lives");
-var totalScore = document.getElementById("score");
-const blue_Brick = document.getElementById("blue");
-const red_Brick = document.getElementById("red");
-const red_Brick_hit = document.getElementById("red_hit");
-const ball = document.getElementById("ball");
-const paddle = document.getElementById("paddle");
 var brickxCoord = [];
 var brickyCoord = [];
 let play = 0;
@@ -37,13 +47,26 @@ let a = 5;
 var lives = 3;
 var side;
 let brickCount = 25;
-
-//pizderije porkerije
 var left;
 var right;
 var top;
 var bot;
 var min;
+let timePassed = 0;
+let countUp;
+function timeStart() {
+  countUp = setInterval(() => {
+    const minutes = Math.floor(timePassed / 60);
+    const seconds = timePassed % 60;
+
+    timer.innerHTML = `${minutes.toString().padStart(2, "0")}:${seconds
+      .toString()
+      .padStart(2, "0")}`;
+
+    timePassed++;
+    console.log(timePassed);
+  }, 1000);
+}
 
 function init() {
   canvas = document.getElementById("canvas");
@@ -206,6 +229,7 @@ function draw() {
       } else {
         lives--;
         updateLives(lives);
+        points = points - timePassed;
         lose();
       }
     }
@@ -339,6 +363,65 @@ function pause() {
     init();
   }
 }
+function info() {
+  Swal.fire({
+    title: "Welcome to the bricks game!",
+    icon: "info",
+    showConfirmButton: false,
+    showCancelButton: true,
+    showDenyButton: true,
+    denyButtonColor: "#00439f",
+    cancelButtonColor: "#00439f",
+    cancelButtonText: "Play Game",
+    denyButtonText: "Controls",
+    allowOutsideClick: false,
+  }).then((result) => {
+    if (result.isDenied) {
+      Swal.fire({
+        title: "Controls",
+        text: "You can use either the arrow keys or the mouse to move around and destroy the bricks",
+        icon: "info",
+        showConfirmButton: true,
+        confirmButtonText: "Play game",
+        confirmButtonColor: "#00439f",
+        allowOutsideClick: false,
+      }).then(() => {
+        init();
+        timeStart();
+      });
+    } else {
+      //PLay Game button
+      init();
+      timeStart();
+    }
+  });
+}
+function start() {
+  clearInterval(interval);
+  Swal.fire({
+    title: "Enter your username",
+    input: "text",
+    confirmButtonColor: "#00439f",
+    inputAttributes: {
+      autocapitalize: "off",
+      autocorrect: "off",
+    },
+    confirmButtonText: "Enter",
+    showLoaderOnConfirm: true,
+    allowOutsideClick: false,
+    preConfirm: (username) => {
+      pushUsername = username;
+    },
+  }).then((result) => {
+    info();
+  });
+}
+function createLeaderboard() {
+  for (let i = 0; i < usernames.length; i++) {
+    leaderboard.push(usernames[i] + ":3uwu" + gameScore[i]);
+  }
+  console.log(leaderboard);
+}
 function updateLives() {
   lifeCount.textContent = "Lives: " + lives;
 }
@@ -352,6 +435,7 @@ function updateScore(brickId) {
     brickHitSound.play();
   }
   if (brickCount == 0) {
+    points -= timePassed;
     win();
   }
   totalScore.textContent = "Score: " + points;
@@ -360,34 +444,114 @@ init();
 initbricks();
 init_mouse();
 function win() {
+  usernames.push(pushUsername);
+  localStorage.setItem("username", JSON.stringify(usernames));
+  gameScore.push(points);
+  localStorage.setItem("score", JSON.stringify(gameScore));
   clearInterval(interval);
-  Swal.fire({
+  clearInterval(countUp);
+  createLeaderboard();
+  highScoresList.style.opacity = 1;
+  canvas.style.opacity = 0;
+
+  for (let i = 0; i < leaderboard.length; i++) {
+    var temp = leaderboard[i].split(":3uwu");
+    if (i % 2 == 0) {
+      leaderboardEntry = document.createElement("div");
+      leaderboardEntryName = document.createElement("div");
+      leaderboardEntryName.textContent = temp[0];
+      leaderboardEntryScore = document.createElement("div");
+      leaderboardEntryScore.textContent = temp[1];
+      leaderboardEntryName.classList.add("innerEntry");
+      leaderboardEntryScore.classList.add("innerEntry");
+      leaderboardEntry.classList.add("entry");
+      highScoresList.appendChild(leaderboardEntry);
+      leaderboardEntry.appendChild(leaderboardEntryName);
+      leaderboardEntry.appendChild(leaderboardEntryScore);
+      leaderboardEntry.style.backgroundColor = "white";
+    } else {
+      leaderboardEntry = document.createElement("div");
+      leaderboardEntryName = document.createElement("div");
+      leaderboardEntryName.textContent = temp[0];
+      leaderboardEntryScore = document.createElement("div");
+      leaderboardEntryScore.textContent = temp[1];
+      leaderboardEntryName.classList.add("innerEntry");
+      leaderboardEntryScore.classList.add("innerEntry");
+      leaderboardEntry.classList.add("entry");
+      highScoresList.appendChild(leaderboardEntry);
+      leaderboardEntry.appendChild(leaderboardEntryName);
+      leaderboardEntry.appendChild(leaderboardEntryScore);
+    }
+  }
+
+  /*Swal.fire({
     title: "You won!",
     text: "Would you like to play again?",
     icon: "success",
     confirmButtonText: "Yes",
     cancelButtonText: "No",
+    allowOutsideClick: false,
   }).then((result) => {
     // If the user clicks "Yes", reset the page
     if (result.isConfirmed) {
-      location.reload();
+      //location.reload();
     }
-  });
+  });*/
 }
 function lose() {
+  usernames.push(pushUsername);
+  localStorage.setItem("username", JSON.stringify(usernames));
+  gameScore.push(points);
+  localStorage.setItem("score", JSON.stringify(gameScore));
   clearInterval(interval);
+  clearInterval(countUp);
+  createLeaderboard();
   loseSound.play();
-  Swal.fire({
+  highScoresList.style.opacity = 1;
+  canvas.style.opacity = 0;
+  for (let i = 0; i < leaderboard.length; i++) {
+    var temp = leaderboard[i].split(":3uwu");
+    console.log(temp[0]);
+    if (i % 2 == 0) {
+      leaderboardEntry = document.createElement("div");
+      leaderboardEntryName = document.createElement("div");
+      leaderboardEntryName.textContent = temp[0];
+      leaderboardEntryScore = document.createElement("div");
+      leaderboardEntryScore.textContent = temp[1];
+      leaderboardEntryName.classList.add("innerEntry");
+      leaderboardEntryScore.classList.add("innerEntry");
+      leaderboardEntry.classList.add("entry");
+      highScoresList.appendChild(leaderboardEntry);
+      leaderboardEntry.appendChild(leaderboardEntryName);
+      leaderboardEntry.appendChild(leaderboardEntryScore);
+      leaderboardEntry.style.backgroundColor = "white";
+    } else {
+      leaderboardEntry = document.createElement("div");
+      leaderboardEntryName = document.createElement("div");
+      leaderboardEntryName.textContent = temp[0];
+      leaderboardEntryScore = document.createElement("div");
+      leaderboardEntryScore.textContent = temp[1];
+      leaderboardEntryName.classList.add("innerEntry");
+      leaderboardEntryScore.classList.add("innerEntry");
+      leaderboardEntry.classList.add("entry");
+      highScoresList.appendChild(leaderboardEntry);
+      leaderboardEntry.appendChild(leaderboardEntryName);
+      leaderboardEntry.appendChild(leaderboardEntryScore);
+    }
+  }
+
+  /*Swal.fire({
     title: "Game over!",
     text: "You lost all your lives! Would you like to play again?",
     icon: "warning",
     showCancelButton: true,
     confirmButtonText: "Yes",
     cancelButtonText: "No",
+    allowOutsideClick: false,
   }).then((result) => {
     // If the user clicks "Yes", reset the page
     if (result.isConfirmed) {
       location.reload();
     }
-  });
+  });*/
 }
