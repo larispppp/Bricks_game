@@ -54,6 +54,8 @@ var bot;
 var min;
 let timePassed = 0;
 let countUp;
+let leaderboardObj = [];
+
 function timeStart() {
   countUp = setInterval(() => {
     const minutes = Math.floor(timePassed / 60);
@@ -313,8 +315,6 @@ function draw() {
               smallest = key;
             }
           }
-          console.log(smallest);
-
           if (smallest == "bot") {
             dy = -dy;
             bricks[i][j] -= 1;
@@ -418,9 +418,19 @@ function start() {
 }
 function createLeaderboard() {
   for (let i = 0; i < usernames.length; i++) {
-    leaderboard.push(usernames[i] + ":3uwu" + gameScore[i]);
+    //leaderboard.push(usernames[i] + ":3uwu" + gameScore[i]);
+    leaderboardObj.push({
+      name: usernames[i],
+      score: gameScore[i],
+    });
   }
-  console.log(leaderboard);
+  leaderboardObj.sort((a, b) => b.score - a.score);
+
+  for (let i = 0; i < leaderboardObj.length; i++) {
+    leaderboard.push(
+      leaderboardObj[i].name + ":3uwu" + leaderboardObj[i].score
+    );
+  }
 }
 function updateLives() {
   lifeCount.textContent = "Lives: " + lives;
@@ -429,7 +439,6 @@ function updateScore(brickId) {
   if (brickId == 2 || brickId == 0) {
     points += 100;
     brickCount--;
-    console.log(brickCount);
     brickBreakSound.play();
   } else if (brickId == 3) {
     brickHitSound.play();
@@ -482,6 +491,23 @@ function win() {
       leaderboardEntry.appendChild(leaderboardEntryName);
       leaderboardEntry.appendChild(leaderboardEntryScore);
     }
+
+    setTimeout(() => {
+      Swal.fire({
+        title: "You won!",
+        text: "Would you like to play again?",
+        icon: "success",
+        confirmButtonText: "Yes",
+        cancelButtonText: "No",
+        allowOutsideClick: false,
+        confirmButtonColor: "#00439f",
+      }).then((result) => {
+        // If the user clicks "Yes", reset the page
+        if (result.isConfirmed) {
+          location.reload();
+        }
+      });
+    }, 6000);
   }
 
   /*Swal.fire({
@@ -511,7 +537,7 @@ function lose() {
   canvas.style.opacity = 0;
   for (let i = 0; i < leaderboard.length; i++) {
     var temp = leaderboard[i].split(":3uwu");
-    console.log(temp[0]);
+    console.log(temp);
     if (i % 2 == 0) {
       leaderboardEntry = document.createElement("div");
       leaderboardEntryName = document.createElement("div");
@@ -538,6 +564,22 @@ function lose() {
       leaderboardEntry.appendChild(leaderboardEntryName);
       leaderboardEntry.appendChild(leaderboardEntryScore);
     }
+    setTimeout(() => {
+      Swal.fire({
+        title: "You lost!",
+        text: "Would you like to play again?",
+        icon: "error",
+        confirmButtonText: "Yes",
+        cancelButtonText: "No",
+        allowOutsideClick: false,
+        confirmButtonColor: "#00439f",
+      }).then((result) => {
+        // If the user clicks "Yes", reset the page
+        if (result.isConfirmed) {
+          location.reload();
+        }
+      });
+    }, 6000);
   }
 
   /*Swal.fire({
